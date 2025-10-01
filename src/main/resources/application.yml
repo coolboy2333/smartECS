@@ -1,0 +1,37 @@
+spring:
+  application:
+    name: cool-ai-agent
+  profiles:
+    active: local
+  ai:
+    dashscope:
+      api-key:
+      chat:
+        options:
+          model: qwen-plus
+server:
+  port: 8223
+  servlet:
+    context-path: /api
+# springdoc-openapi
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: alpha
+  api-docs:
+    path: /v3/api-docs
+  group-configs:
+    - group: 'default'
+      paths-to-match: '/**'
+      packages-to-scan: com.coolboy.coolaiagent.controller
+# knife4j 配置
+knife4j:
+  enable: true
+  setting:
+    language: zh_cn
+# Spring AI日志
+#logging:
+#  level:
+#    org.springframework.ai.chat.client.advisor.SimpleLoggerAdvisor: debug
+
