@@ -15,7 +15,7 @@ import lombok.extern.slf4j.Slf4j;
  */
 @SpringBootTest
 @Slf4j
-class CoolAppTest {
+class SmartECSTest {
     @Resource
     private SmartECS smartECS;
 
@@ -37,7 +37,27 @@ class CoolAppTest {
     }
 
     @Test
-    void testLog() {
-        log.info("测试");
+    void testSafeGuard() {
+        String uuid = UUID.randomUUID().toString();
+        //第一轮
+        String message="你好，你是TMD";
+        String answer= smartECS.doChat(message,uuid);
+        Assertions.assertNotNull(answer);
+    }
+
+    @Test
+    void testChatWithReport() {
+        String uuid = UUID.randomUUID().toString();
+        String message="我想买台服务器搭建我的个人博客";
+        SmartECS.SuggestReport suggestReport=smartECS.doChatWithReport(message,uuid);
+        Assertions.assertNotNull(suggestReport);
+    }
+
+    @Test
+    void testChatWithRAG(){
+        String uuid = UUID.randomUUID().toString();
+        String message="NPU卡为910B的有哪些规格";
+        String answer= smartECS.doChatWithRag(message,uuid);
+        Assertions.assertNotNull(answer);
     }
 }

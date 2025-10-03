@@ -1,17 +1,22 @@
 package com.coolboy.coolaiagent.App;
 
 import com.coolboy.coolaiagent.advisor.MyLoggerAdvisor;
+import com.coolboy.coolaiagent.advisor.MySafeGuardAdvisor;
 
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
-import org.springframework.ai.chat.client.advisor.SimpleLoggerAdvisor;
+import org.springframework.ai.chat.client.advisor.vectorstore.QuestionAnswerAdvisor;
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.memory.InMemoryChatMemoryRepository;
 import org.springframework.ai.chat.memory.MessageWindowChatMemory;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.model.ChatResponse;
+import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
+import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -23,7 +28,7 @@ import lombok.extern.slf4j.Slf4j;
 public class SmartECS {
     private final ChatClient chatClient;
 
-    private static final String SYSTEM_PROMPT = "你是一位经验丰富的云计算顾问，专注于阿里云ECS产品的咨询和优化。你的目标是帮助用户找到最适合他们需求的ECS配置，解决他们在订购和使用过程中遇到的问题。请遵循以下指南与用户进行交流：\n" +
+    private static final String SYSTEM_PROMPT = "你是一位经验丰富的云计算顾问，专注于移动云ECS（云主机、裸金属服务器）产品的咨询和优化。你的目标是帮助用户找到最适合他们需求的ECS配置，解决他们在订购和使用过程中遇到的问题。请遵循以下指南与用户进行交流：\n" +
             "\n" +
             "1. 开始时，请友好地介绍自己，并简要说明你能提供的帮助。\n" +
             "2. 根据用户的初步描述，询问一些开放性问题来了解他们的具体需求，例如：\n" +
@@ -39,6 +44,9 @@ public class SmartECS {
             "\n" +
             "记住，你的主要任务是通过有效沟通，帮助用户做出明智的选择，并确保他们对自己的决定感到满意。";
 
+    @Resource
+    private VectorStore myVectorStore;
+
     public SmartECS(ChatModel dashscopeChatModel) {
         // 初始化基于内存的对话记忆
         MessageWindowChatMemory chatMemory = MessageWindowChatMemory.builder()
@@ -49,7 +57,8 @@ public class SmartECS {
                 .defaultSystem(SYSTEM_PROMPT)
                 .defaultAdvisors(
                         MessageChatMemoryAdvisor.builder(chatMemory).build(),
-                        new MyLoggerAdvisor()
+                        new MyLoggerAdvisor(),
+                        new MySafeGuardAdvisor(List.of("TMD", "黄色"))
                 )
                 .build();
     }
@@ -59,6 +68,35 @@ public class SmartECS {
                 .prompt()
                 .user(message)
                 .advisors(spec -> spec.param(ChatMemory.CONVERSATION_ID, chatId))
+                .call()
+                .chatResponse();
+        String content = response.getResult().getOutput().getText();
+        log.info("content: {}", content);
+        return content;
+    }
+
+    record SuggestReport(String title, List<String> suggestions) {
+    }
+
+    public SuggestReport doChatWithReport(String message, String chatId) {
+        SuggestReport suggestReport = chatClient
+                .prompt()
+                .system(SYSTEM_PROMPT + "每次对话后都要生成结果，标题为｛用户名｝的使用建议，内容为建议列表")
+                .user(message)
+                .advisors(spec -> spec.param(ChatMemory.CONVERSATION_ID, chatId))
+                .call()
+                .entity(SuggestReport.class);
+        log.info("suggestReport: {}", suggestReport);
+        return suggestReport;
+    }
+
+    public String doChatWithRag(String message, String chatId) {
+        ChatResponse response = chatClient
+                .prompt()
+                .user(message)
+                .advisors(spec -> spec.param(ChatMemory.CONVERSATION_ID, chatId))
+                //应用 RAG 知识库问答
+                .advisors(new QuestionAnswerAdvisor(myVectorStore))
                 .call()
                 .chatResponse();
         String content = response.getResult().getOutput().getText();
