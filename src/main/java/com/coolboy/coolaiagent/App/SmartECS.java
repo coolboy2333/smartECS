@@ -2,6 +2,8 @@ package com.coolboy.coolaiagent.App;
 
 import com.coolboy.coolaiagent.advisor.MyLoggerAdvisor;
 import com.coolboy.coolaiagent.advisor.MySafeGuardAdvisor;
+import com.coolboy.coolaiagent.rag.QueryRewriter;
+import com.coolboy.coolaiagent.rag.RagCustomAdvisorFactory;
 
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
@@ -20,7 +22,7 @@ import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * @Author yangsheng
+ * @Author coolboy2333
  * @Date 2025/9/27
  */
 @Component
@@ -44,8 +46,13 @@ public class SmartECS {
             "\n" +
             "记住，你的主要任务是通过有效沟通，帮助用户做出明智的选择，并确保他们对自己的决定感到满意。";
 
+    private static final String tag = "规格";
+
     @Resource
     private VectorStore myVectorStore;
+
+    @Resource
+    private QueryRewriter queryRewriter;
 
     public SmartECS(ChatModel dashscopeChatModel) {
         // 初始化基于内存的对话记忆
@@ -91,12 +98,17 @@ public class SmartECS {
     }
 
     public String doChatWithRag(String message, String chatId) {
+        // 查询重写
+        String rewrittenMessage = queryRewriter.doQueryRewrite(message);
         ChatResponse response = chatClient
                 .prompt()
-                .user(message)
+                .user(rewrittenMessage)
                 .advisors(spec -> spec.param(ChatMemory.CONVERSATION_ID, chatId))
                 //应用 RAG 知识库问答
                 .advisors(new QuestionAnswerAdvisor(myVectorStore))
+                //TODO 查询矢量数据库
+                //应用自定义的 RAG 检索增强服务（文档查询器 + 上下文增强器）
+                .advisors(RagCustomAdvisorFactory.createRagCustomAdvisorFactory(myVectorStore, tag))
                 .call()
                 .chatResponse();
         String content = response.getResult().getOutput().getText();

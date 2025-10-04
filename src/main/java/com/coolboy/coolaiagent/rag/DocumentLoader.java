@@ -15,7 +15,7 @@ import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * @Author yangsheng
+ * @Author coolboy2333
  * @Date 2025/10/2
  */
 @Component
@@ -29,21 +29,21 @@ public class DocumentLoader {
 
     /**
      * 加载多篇PDF文档
-     * */
-    public List<Document> loadPdfs(){
+     */
+    public List<Document> loadPdfs() {
         List<Document> documents = new ArrayList<Document>();
         try {
-            Resource[] resources=resourcePatternResolver.getResources("classpath:document/*.pdf");
+            Resource[] resources = resourcePatternResolver.getResources("classpath:document/*.pdf");
             for (Resource resource : resources) {
                 String filename = resource.getFilename();
-                PdfDocumentReaderConfig config=PdfDocumentReaderConfig.builder()
+                PdfDocumentReaderConfig config = PdfDocumentReaderConfig.builder()
                         .withPageTopMargin(0)
                         .withPageExtractedTextFormatter(ExtractedTextFormatter.builder()
                                 .withNumberOfTopTextLinesToDelete(0)
                                 .build())
                         .withPagesPerDocument(1)
                         .build();
-                PagePdfDocumentReader pdfReader=new PagePdfDocumentReader(resource,config);
+                PagePdfDocumentReader pdfReader = new PagePdfDocumentReader(resource, config);
                 documents.addAll(pdfReader.get());
             }
         } catch (IOException e) {

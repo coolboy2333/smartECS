@@ -1,7 +1,7 @@
 package com.coolboy.coolaiagent.demo.invoke;
 
 /**
- * @Author yangsheng
+ * @Author coolboy2333
  * @Date 2025/9/26
  */
 public interface TestApiKey {

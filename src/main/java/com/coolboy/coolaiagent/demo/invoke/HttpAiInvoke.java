@@ -7,7 +7,7 @@ import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 
 /**
- * @Author yangsheng
+ * @Author coolboy2333
  * @Date 2025/9/26
  */
 public class HttpAiInvoke {

@@ -12,7 +12,7 @@ import java.util.List;
 import jakarta.annotation.Resource;
 
 /**
- * @Author yangsheng
+ * @Author coolboy2333
  * @Date 2025/10/3
  */
 @Configuration
@@ -20,12 +20,17 @@ public class MyVectorStoreConfig {
     @Resource
     private DocumentLoader documentLoader;
 
+    @Resource
+    private DocumentEnricher documentEnricher;
+
     @Bean
     VectorStore myVectorStore(EmbeddingModel embeddingModel) {
         SimpleVectorStore simpleVectorStore = SimpleVectorStore.builder(embeddingModel).build();
         //加载文档
         List<Document> documents = documentLoader.loadPdfs();
-        simpleVectorStore.add(documents);
+        //自动补充关键词元数据
+        List<Document> enrichedDocuments = documentEnricher.enrichDocumentsByKeyword(documents);
+        simpleVectorStore.add(enrichedDocuments);
         return simpleVectorStore;
     }
 }

@@ -13,7 +13,7 @@ import com.alibaba.dashscope.utils.JsonUtils;
 import java.util.Arrays;
 
 /**
- * @Author yangsheng
+ * @Author coolboy2333
  * @Date 2025/9/26
  */
 public class SdkAiInvoke {

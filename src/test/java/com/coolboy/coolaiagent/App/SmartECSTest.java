@@ -10,7 +10,7 @@ import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * @Author yangsheng
+ * @Author coolboy2333
  * @Date 2025/9/27
  */
 @SpringBootTest
@@ -56,8 +56,10 @@ class SmartECSTest {
     @Test
     void testChatWithRAG(){
         String uuid = UUID.randomUUID().toString();
-        String message="NPU卡为910B的有哪些规格";
+        String message="我想买一台裸金属服务器用于模型训推，有什么规格可以推荐？";
         String answer= smartECS.doChatWithRag(message,uuid);
         Assertions.assertNotNull(answer);
     }
+
+
 }
