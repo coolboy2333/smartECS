@@ -8,7 +8,7 @@ spring:
       api-key:
       chat:
         options:
-          model: qwen-plus
+          model: qwen-plus-2025-09-11
 server:
   port: 8223
   servlet:
@@ -34,4 +34,9 @@ knife4j:
 #logging:
 #  level:
 #    org.springframework.ai.chat.client.advisor.SimpleLoggerAdvisor: debug
+
+# searchAPI
+search-api:
+  # 需要替换为你自己的 key
+  api-key: 你的 API Key
 

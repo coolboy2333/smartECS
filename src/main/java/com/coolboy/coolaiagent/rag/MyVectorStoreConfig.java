@@ -29,8 +29,8 @@ public class MyVectorStoreConfig {
         //加载文档
         List<Document> documents = documentLoader.loadPdfs();
         //自动补充关键词元数据
-        List<Document> enrichedDocuments = documentEnricher.enrichDocumentsByKeyword(documents);
-        simpleVectorStore.add(enrichedDocuments);
+//        List<Document> enrichedDocuments = documentEnricher.enrichDocumentsByKeyword(documents);
+        simpleVectorStore.add(documents);
         return simpleVectorStore;
     }
 }
