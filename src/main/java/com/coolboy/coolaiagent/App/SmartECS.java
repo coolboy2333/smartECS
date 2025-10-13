@@ -14,6 +14,7 @@ import org.springframework.ai.chat.memory.MessageWindowChatMemory;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.tool.ToolCallback;
+import org.springframework.ai.tool.ToolCallbackProvider;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.stereotype.Component;
 
@@ -71,6 +72,12 @@ public class SmartECS {
                 .build();
     }
 
+    /**
+     * AI 基础对话（支持多轮对话记忆）
+     * @param message
+     * @param chatId
+     * @return
+     */
     public String doChat(String message, String chatId) {
         ChatResponse response = chatClient
                 .prompt()
@@ -86,6 +93,12 @@ public class SmartECS {
     record SuggestReport(String title, List<String> suggestions) {
     }
 
+    /**
+     * AI 基础对话结果结构化输出
+     * @param message
+     * @param chatId
+     * @return
+     */
     public SuggestReport doChatWithReport(String message, String chatId) {
         SuggestReport suggestReport = chatClient
                 .prompt()
@@ -98,6 +111,12 @@ public class SmartECS {
         return suggestReport;
     }
 
+    /**
+     * 使用知识库问答
+     * @param message
+     * @param chatId
+     * @return
+     */
     public String doChatWithRag(String message, String chatId) {
         // 查询重写
         String rewrittenMessage = queryRewriter.doQueryRewrite(message);
@@ -120,6 +139,12 @@ public class SmartECS {
     @Resource
     private ToolCallback[] allTools;
 
+    /**
+     * AI对话时自动调用工具
+     * @param message
+     * @param chatId
+     * @return
+     */
     public String doChatWithTools(String message, String chatId) {
         ChatResponse response = chatClient
                 .prompt()
@@ -135,5 +160,27 @@ public class SmartECS {
         return content;
     }
 
+    @Resource
+    private ToolCallbackProvider toolCallbackProvider;
 
+    /**
+     * AI 对话调用MCP服务
+     * @param message
+     * @param chatId
+     * @return
+     */
+    public String doChatWithMCP(String message, String chatId) {
+        ChatResponse response = chatClient
+                .prompt()
+                .user(message)
+                .advisors(spec -> spec.param(ChatMemory.CONVERSATION_ID, chatId))
+                // 开启日志，便于观察效果
+                .advisors(new MyLoggerAdvisor())
+                .toolCallbacks(toolCallbackProvider)
+                .call()
+                .chatResponse();
+        String content = response.getResult().getOutput().getText();
+        log.info("content: {}", content);
+        return content;
+    }
 }

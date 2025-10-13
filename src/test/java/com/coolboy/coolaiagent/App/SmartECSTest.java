@@ -88,4 +88,20 @@ class SmartECSTest {
         String answer = smartECS.doChatWithTools(message, chatId);
         Assertions.assertNotNull(answer);
     }
+
+    @Test
+    void doChatWithMCP() {
+        String uuid = UUID.randomUUID().toString();
+        String message="我在扬州，请推荐最近的资源池";
+        String answer= smartECS.doChatWithMCP(message,uuid);
+        Assertions.assertNotNull(answer);
+    }
+
+    @Test
+    void doChatWithMCP_searchImage() {
+        String uuid = UUID.randomUUID().toString();
+        String message="帮我搜索下数据中心的图片";
+        String answer= smartECS.doChatWithMCP(message,uuid);
+        Assertions.assertNotNull(answer);
+    }
 }
